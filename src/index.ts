@@ -1,4 +1,4 @@
-import { GraphQLServer, PubSub } from 'graphql-yoga';
+import { ApolloServer, PubSub } from 'apollo-server';
 
 let counter = 0;
 
@@ -17,7 +17,7 @@ const typeDefs = `
 `
 const resolvers = {
   Query: {
-    hello: (_, { name }) => `Hello ${name || 'World'}!"`,
+    hello: (_, { name }) => `Hello ${name || 'World'}!`,
   },
   Mutation: {
     incrementCounter: (_, { by }, { pubsub }) => {
@@ -34,5 +34,5 @@ const resolvers = {
 }
 
 const pubsub = new PubSub();
-const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
-server.start(o => console.log(`Server is running on http://localhost:${o.port}`));
+const server = new ApolloServer({ typeDefs, resolvers, context: { pubsub } });
+server.listen().then(({ url }) => console.log(`Server is running on ${url}`));
