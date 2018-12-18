@@ -1,4 +1,4 @@
-import { ApolloServer, PubSub } from 'apollo-server';
+import { ApolloServer, PubSub, makeExecutableSchema } from 'apollo-server';
 
 let counter = 0;
 
@@ -6,6 +6,7 @@ const CHANNEL = 'COUNTER_CHANNEL';
 
 const typeDefs = `
   type Query {
+    counter: Int!
     hello(name: String): String!
   }
   type Mutation {
@@ -17,6 +18,7 @@ const typeDefs = `
 `
 const resolvers = {
   Query: {
+    counter: () => counter,
     hello: (_, { name }) => `Hello ${name || 'World'}!`,
   },
   Mutation: {
@@ -33,6 +35,11 @@ const resolvers = {
   }
 }
 
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
+
 const pubsub = new PubSub();
-const server = new ApolloServer({ typeDefs, resolvers, context: { pubsub } });
+const server = new ApolloServer({ schema, context: { pubsub } });
 server.listen().then(({ url }) => console.log(`Server is running on ${url}`));
