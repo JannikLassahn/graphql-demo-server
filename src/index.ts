@@ -1,4 +1,4 @@
-import { ApolloServer, gql } from 'apollo-server';
+import { ApolloServer, gql, makeExecutableSchema } from 'apollo-server';
 import * as fs from 'fs';
 
 import resolvers from './schema';
@@ -13,9 +13,13 @@ const start = async () => {
     await connectToDatabase(config.db.connectionString);
 
     const typeDefs = gql(fs.readFileSync(`${__dirname}/schema/schema.gql`, 'utf8'));
-    const server = new ApolloServer({
+    const schema = makeExecutableSchema({
         typeDefs,
-        resolvers,
+        resolvers
+    });
+
+    const server = new ApolloServer({
+        schema,
         context: () => {
             return {
                 loaders: {

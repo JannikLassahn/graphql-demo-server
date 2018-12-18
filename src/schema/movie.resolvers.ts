@@ -1,5 +1,6 @@
 import { ValidationError } from 'apollo-server';
-import { connectionFromMongoCursor, mongooseLoader } from '@entria/graphql-mongoose-loader';
+import { connectionFromMongoCursor } from '@entria/graphql-mongoose-loader';
+import { connectionFromArray } from 'graphql-relay';
 
 const load = async (context, id) => {
     if (!id) {
@@ -29,7 +30,7 @@ export const movie = async (_, { id }, { loaders }) => {
     return movie || new ValidationError('Movie ID not found');
 }
 
-export async function addMovie(_, { input }, { Movie }) {
+export const addMovie = async (_, { input }, { Movie }) => {
     const { title, releasedAt, description, genres, runtime } = input;
     const movie = new Movie({
         title,
@@ -44,12 +45,12 @@ export async function addMovie(_, { input }, { Movie }) {
     return movie;
 }
 
-export async function deleteMovie(_, { movieId }, { Movie }) {
+export const deleteMovie = async (_, { movieId }, { Movie }) => {
     const movie = await Movie.findByIdAndDelete(movieId);
     return movie !== null;
 }
 
-export async function addReview(_, { input }, { Movie }) {
+export const addReview = async (_, { input }, { Movie }) => {
     const { movieId, title, content, rating } = input;
     const movie = await Movie.findById(movieId);
     if (!movie) {
@@ -68,4 +69,10 @@ export async function addReview(_, { input }, { Movie }) {
     }
     movie.reviews.push(review);
     movie.save();
+
+    return review;
+}
+
+export const Movie = {
+    reviews: (movie, args) => connectionFromArray(movie.reviews, args)
 }
