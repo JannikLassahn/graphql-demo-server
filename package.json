@@ -6,15 +6,22 @@
   "author": "Jannik Lassahn <jannik.lassahn@gmx.de>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "copyfiles -u 1 src/**/*.gql dist/ && tsc",
     "dev": "ts-node-dev --inspect=9229 -- src/index.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@entria/graphql-mongoose-loader": "^2.1.1",
     "apollo-server": "^2.2.6",
-    "graphql": "^14.0.2"
+    "dataloader": "^1.4.0",
+    "graphql": "^14.0.2",
+    "graphql-relay": "^0.5.5",
+    "mongoose": "^5.3.16"
   },
   "devDependencies": {
+    "@types/graphql": "^14.0.3",
+    "@types/mongoose": "^5.3.4",
+    "copyfiles": "^2.1.0",
     "ts-node-dev": "^1.0.0-pre.31",
     "typescript": "^3.2.2"
   }

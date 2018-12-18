@@ -1,0 +1,139 @@
+scalar Date
+
+type Movie {
+    id: ID!
+    title: String!
+    createdAt: Date!
+    updatedAt: Date!
+    genres: [String!]
+    runtime: Int
+    releasedAt: Date
+    reviews(after: String, before: String, first: Int, last: Int): ReviewConnection!
+    # cast(after: String, before: String, first: Int, last: Int): CastConnection!
+}
+
+type Review {
+    title: String!
+    content: String!
+    rating: Int!
+    createdAt: Date
+}
+
+type ReviewEdge {
+    node: Review
+    cursor: String!
+}
+
+type ReviewConnection {
+    pageInfo: PageInfo!
+    edges: [ReviewEdge]
+}
+
+type Cast {
+    character: String!
+    actor: Actor!
+    movie: Movie!
+}
+
+type CastEdge {
+    node: Cast
+    cursor: String!
+}
+
+type CastConnection {
+    pageInfo: PageInfo!
+    edges: [CastEdge]
+}
+
+type Actor {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    bio: String
+    birthday: Date
+    cast(after: String, before: String, first: Int, last: Int): CastConnection!
+}
+
+type ActorConnection {
+    edges: [ActorEdge]
+    pageInfo: PageInfo
+}
+
+type ActorEdge {
+    cursor: String
+    node: Actor
+}
+
+type PageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+}
+
+type MovieConnection {
+    edges: [MovieEdge]
+    pageInfo: PageInfo
+}
+
+type MovieEdge {
+    cursor: String
+    node: Movie
+}
+
+enum SearchType {
+    ACTOR
+    MOVIE
+}
+
+union SearchResultItem = Actor | Movie
+
+type SearchResultItemConnection {
+    edges: [SearchResultItemEdge]
+    pageInfo: PageInfo
+}
+
+type SearchResultItemEdge {
+    node: SearchResultItem
+    cursor: String
+}
+
+input AddMovieInput {
+    title: String!
+    description: String!
+    genres: String
+    runtime: Int
+    releasedAt: Date
+}
+
+input AddReviewInput {
+    movieId: ID!
+    title: String!
+    content: String!
+    rating: Int
+}
+
+input AddActorInput {
+    firstName: String!
+    lastName: String!
+    bio: String
+    birthday: Date
+}
+
+type Query {
+    allMovies(after: String, before: String, first: Int, last: Int): MovieConnection! 
+    movie(id: ID!): Movie
+
+    allActors(after: String, before: String, first: Int, last: Int): ActorConnection!
+    actor(id: ID!): Actor
+
+    search(after: String, before: String, first: Int, last: Int, query: String, searchType: SearchType): SearchResultItemConnection
+}
+
+type Mutation {
+    addMovie(input: AddMovieInput): Movie
+    deleteMovie(movieId: ID!): Boolean
+
+    addReview(input: AddReviewInput!): Review
+
+    addActor(input: AddActorInput!): Actor
+    deleteActor(actorId: ID!): Boolean
+}

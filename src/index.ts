@@ -1,38 +1,37 @@
-import { ApolloServer, PubSub } from 'apollo-server';
+import { ApolloServer, gql } from 'apollo-server';
+import * as fs from 'fs';
 
-let counter = 0;
+import resolvers from './schema';
+import Movie from './data/movie';
+import Actor from './data/actor';
 
-const CHANNEL = 'COUNTER_CHANNEL';
+import config from './config';
+import connectToDatabase from './data/context';
+import { movieLoader, actorLoader } from './loaders';
 
-const typeDefs = `
-  type Query {
-    hello(name: String): String!
-  }
-  type Mutation {
-    incrementCounter(by: Int): Int!
-  }
-  type Subscription {
-    counter: Int!
-  }
-`
-const resolvers = {
-  Query: {
-    hello: (_, { name }) => `Hello ${name || 'World'}!`,
-  },
-  Mutation: {
-    incrementCounter: (_, { by }, { pubsub }) => {
-      counter += by;
-      pubsub.publish(CHANNEL, { counter });
-      return counter;
-    }
-  },
-  Subscription: {
-    counter: {
-      subscribe: (_, __, { pubsub }) => pubsub.asyncIterator(CHANNEL)
-    }
-  }
+const start = async () => {
+    await connectToDatabase(config.db.connectionString);
+
+    const typeDefs = gql(fs.readFileSync(`${__dirname}/schema/schema.gql`, 'utf8'));
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: () => {
+            return {
+                loaders: {
+                    movieLoader: movieLoader(),
+                    actorLoader: actorLoader()
+                },
+                Movie,
+                Actor
+            }
+        }
+    });
+    const { url } = await server.listen({
+        port: config.server.port
+    });
+
+    console.log(`Server is running on ${url}`)
 }
 
-const pubsub = new PubSub();
-const server = new ApolloServer({ typeDefs, resolvers, context: { pubsub } });
-server.listen().then(({ url }) => console.log(`Server is running on ${url}`));
+start().catch(error => console.error(error));
